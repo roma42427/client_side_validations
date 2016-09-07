@@ -12,7 +12,8 @@ test('when values match', function() {
   var options = { message: "failed validation" };
   password_element.val('test');
   password_confirmation_element.val('test');
-  equal(ClientSideValidations.validators.local.confirmation(password_element, options), undefined);
+  password_confirmation_element.data('focusedOut', true);
+  equal(ClientSideValidations.validators.local.confirmation(password_confirmation_element, options), undefined);
 });
 
 test('when values do not match', function() {
@@ -21,5 +22,6 @@ test('when values do not match', function() {
   var options = { message: "failed validation" };
   password_element.val('test');
   password_confirmation_element.val('bad test');
-  equal(ClientSideValidations.validators.local.confirmation(password_element, options), "failed validation");
+  password_confirmation_element.data('focusedOut', true);
+  equal(ClientSideValidations.validators.local.confirmation(password_confirmation_element, options), "failed validation");
 });

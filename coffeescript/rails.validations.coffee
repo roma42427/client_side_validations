@@ -166,7 +166,7 @@ window.ClientSideValidations.enablers =
     form   = input.form
     $form  = $(form)
 
-    $input.filter(':not(:radio):not([id$=_confirmation])')
+    $input.filter(':not(:radio)')
       .each ->
         $(@).attr('data-validate', true)
       .on(event, binding) for event, binding of {
@@ -197,11 +197,19 @@ window.ClientSideValidations.enablers =
     # Inputs for confirmations
     $input.filter('[id$=_confirmation]').each ->
       confirmationElement = $(@)
-      element = $form.find("##{@id.match(/(.+)_confirmation/)[1]}:input")
-      if element[0]
-        $("##{confirmationElement.attr('id')}").on(event, binding) for event, binding of {
-          'focusout.ClientSideValidations': -> element.data('changed', true).isValid(form.ClientSideValidations.settings.validators)
-          'keyup.ClientSideValidations'   : -> element.data('changed', true).isValid(form.ClientSideValidations.settings.validators)
+
+      handleFocusout = ->
+        confirmationElement.data('focusedOut', true)
+        confirmationElement.data('changed', true).isValid(form.ClientSideValidations.settings.validators)
+
+      $form.on('submit.ClientSideValidations', handleFocusout)
+      confirmationElement.on('focusout.ClientSideValidations', handleFocusout)
+
+      parentElement = $form.find("##{@id.match(/(.+)_confirmation/)[1]}:input")
+      if parentElement.length
+        parentElement.on(event, binding) for event, binding of {
+          'focusout.ClientSideValidations': -> confirmationElement.data('changed', true).isValid(form.ClientSideValidations.settings.validators)
+          'keyup.ClientSideValidations'   : -> confirmationElement.data('changed', true).isValid(form.ClientSideValidations.settings.validators)
         }
 
 window.ClientSideValidations.validators =
@@ -321,7 +329,8 @@ window.ClientSideValidations.validators =
         return options.message
 
     confirmation: (element, options) ->
-      if element.val() != $("##{element.attr('id')}_confirmation").val()
+      parentElement = element.closest('form').find("##{element.attr('id').replace('_confirmation', '')}")
+      if element.data('focusedOut') && element.val() != parentElement.val()
         return options.message
 
     uniqueness: (element, options) ->

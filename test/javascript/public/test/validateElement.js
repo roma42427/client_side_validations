@@ -6,7 +6,7 @@ module('Validate Element', {
       label_tag: '<div class="field_with_errors"><label id="label_tag" /></div>',
       validators: {
         'user[name]':{"presence":[{"message": "must be present"}], "format":[{"message":"is invalid","with":/\d+/}]},
-        'user[password]':{"confirmation":[{"message": "must match confirmation"}]},
+        'user[password_confirmation]':{"confirmation":[{"attribute": "Password", "message": "must match password"}]},
         'user[agree]':{"acceptance": [{"message": "must be accepted"}]},
         'user[email]':{"uniqueness":[{"message": "must be unique"}],"presence":[{"message": "must be present"}]},
         'user[info_attributes][eye_color]':{"presence":[{"message": "must be present"}]},
@@ -150,11 +150,11 @@ test('Validate when checkbox is clicked', function() {
 
 test('Validate when focusout on confirmation', function() {
   var form = $('form#new_user'), password = form.find('input#user_password'), confirmation = form.find('input#user_password_confirmation');
-  var label = $('label[for="user_password"]');
+  var label = $('label[for="user_password_confirmation"]');
 
   password.val('password');
   confirmation.trigger('focusout');
-  ok(password.parent().hasClass('field_with_errors'));
+  ok(confirmation.parent().hasClass('field_with_errors'));
   ok(label.parent().hasClass('field_with_errors'));
 });
 
@@ -208,19 +208,20 @@ test('Validate additional attributes', function() {
   ok(label.parent().hasClass('field_with_errors'));
 });
 
-test('Validate when keyup on confirmation', function() {
+test("Validate when keyup on parent's confirmation", function() {
   var form = $('form#new_user'), password = form.find('input#user_password'), confirmation = form.find('input#user_password_confirmation');
-  var label = $('label[for="user_password"]');
+  var label = $('label[for="user_password_confirmation"]');
 
-  password.val('password');
+  confirmation.val('password');
+  confirmation.trigger('focusout');
 
-  confirmation.trigger('keyup');
-  ok(password.parent().hasClass('field_with_errors'));
+  password.trigger('keyup');
+  ok(confirmation.parent().hasClass('field_with_errors'));
   ok(label.parent().hasClass('field_with_errors'));
 
-  confirmation.val('password')
-  confirmation.trigger('keyup');
-  ok(!password.parent().hasClass('field_with_errors'));
+  password.val('password')
+  password.trigger('keyup');
+  ok(!confirmation.parent().hasClass('field_with_errors'));
   ok(!label.parent().hasClass('field_with_errors'));
 });
 
